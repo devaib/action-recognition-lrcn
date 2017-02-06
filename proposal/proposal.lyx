@@ -1,0 +1,303 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 2.5cm
+\rightmargin 3cm
+\bottommargin 2.5cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Dangerous Action Recognition of Pedestrians with Convolutional Networks
+\end_layout
+
+\begin_layout Author
+Binghao Wang, Qianyao Yang
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+\noindent
+Recognizing dangerous human actions is important to the safety of autonomous
+ vehicles on the street.
+ Currently, object detection techniques are widely used in the industry,
+ however it doesn't predict potential dangerous motion from pedestrians.
+ We will implement the state-of-the-art two-stream convolutional network
+ model
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+
+\end_inset
+
+, of which the spatial stream is mainly trained on the standard video action
+ benchmarks(UCF-101, HMDB-51) while the temporal stream is trained on bi-directi
+onal optical flow.
+ In this proposal, we will talk about our motivation, briefly summarize
+ our goal and list some details of the project.
+\end_layout
+
+\begin_layout Section
+Motivation
+\end_layout
+
+\begin_layout Standard
+The action recognition problem can be explained as taking some sequential
+ data as inputs and giving a single classification as output.
+ Comparing to object detection on 2D images, more information can be extracted
+ from the additional temporal domain in 3D.
+ For instance, only detecting the location of the pedestrians in front is
+ not sufficient for a self-driving car.
+ The sequential actions may contain crucial information for it to make a
+ decision, which can be lifesaving for both passengers and pedestrians.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename 1.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Two-stream architecture for video classification(from 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+
+\end_inset
+
+)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+
+\end_inset
+
+ proposed a two-stream architecture(Figure 1), which achieved 88.0% mean
+ accurary on UCF-101 benchmark.
+ The problems of our implementation are twofold: 1)the temporal ConvNet
+ requires gigantic amount of training data(multiple TBs) and 2)the recognition
+ speed is not satisfying since we want to run it at real time.
+ Possible improvement approaches would be: 1)using more hand-crafting features
+ on optical flow and 2)reconstructing the model architecture or using other
+ features.
+\end_layout
+
+\begin_layout Section
+Project Summary
+\end_layout
+
+\begin_layout Standard
+We will build up an architecture based on 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+
+\end_inset
+
+ and try to train and finetune the model for recognizing dangerous actions
+ of pedestrians.
+ Different features such as optical flow, trajectory, motion vectors will
+ be tested to achieve better result.
+ Hopefully, an improvement or compromise will be figured out to deploy this
+ model on real time recognition.
+ LSTM network will also be tested.
+\end_layout
+
+\begin_layout Section
+Project Details
+\end_layout
+
+\begin_layout Subsubsection*
+Archtecutre and Environment
+\end_layout
+
+\begin_layout Standard
+Most of training and test procedures will be using Torch and MXNet on a
+ Nvidia Titan X GPU, and the final model will be deployed in Torch.
+\end_layout
+
+\begin_layout Subsubsection*
+Implementation Issue and Chanllenges
+\end_layout
+
+\begin_layout Standard
+Most tricky issues are the implementation of multimodal network and the
+ search for optimal temporal stream feature extraction method.
+ The insufficience of training data will also restrict our model performance.
+ 
+\end_layout
+
+\begin_layout Subsubsection*
+Timeline
+\end_layout
+
+\begin_layout Itemize
+Feb 6 - Feb 20 Implement the basic architecture of the network, also test
+ LSTM approaches(if time allows);
+\end_layout
+
+\begin_layout Itemize
+Feb 20 - Mar 6 Implement and test feature extraction methods, submit the
+ progress report;
+\end_layout
+
+\begin_layout Itemize
+Mar 6 - Mar20 Tinker the network, make demo and prepare for presentation;
+\end_layout
+
+\begin_layout Itemize
+Apr 3 - Apr 24 Submit final project report.
+\end_layout
+
+\begin_layout Section
+Conclusion
+\end_layout
+
+\begin_layout Standard
+We want to implement a two-stream convolutional model especially for recognizing
+ dangerous actions of pedestrians, which will benefit significantly for
+ autonomous driving system.
+ Considering of the shortage of computational power of embedded system,
+ we will also try to accelerate the architecture by different model structures
+ and feature extraction techniques.
+\end_layout
+
+\begin_layout Section*
+Statement
+\end_layout
+
+\begin_layout Standard
+We read the leaflet 
+\begin_inset Quotes eld
+\end_inset
+
+Beware of Plagiarism
+\begin_inset Quotes erd
+\end_inset
+
+ and understand that plagiarism can lead to a failing mark in the project.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "1"
+key "key-1"
+
+\end_inset
+
+K.
+ Simonyan and A.
+ Zisserman.
+ Two-stream convolutional networks for action recognition in videos.
+ In 
+\shape italic
+Advances in neural information processing systems
+\shape default
+, pp.
+ 568-576.
+ 2014.
+\end_layout
+
+\end_body
+\end_document
