@@ -194,8 +194,8 @@ key "key-1"
 
 \end_inset
 
- and try to train and finetune the model for recognizing dangerous actions
- of pedestrians.
+ and train and finetune the model for recognizing dangerous actions of pedestria
+ns.
  Different features such as optical flow, trajectory, motion vectors will
  be tested to achieve better result.
  Hopefully, an improvement or compromise will be figured out to deploy this
@@ -297,6 +297,46 @@ Advances in neural information processing systems
 , pp.
  568-576.
  2014.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "2"
+key "key-2"
+
+\end_inset
+
+Zhang, Bowen, Limin Wang, Zhe Wang, Yu Qiao, and Hanli Wang.
+ 
+\shape italic
+Real-time action recognition with enhanced motion vector CNNs.
+ 
+\shape default
+In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition
+, pp.
+ 2718-2726.
+ 2016.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "3"
+key "key-3"
+
+\end_inset
+
+Wang, Heng, and Cordelia Schmid.
+ 
+\shape italic
+Action recognition with improved trajectories.
+ 
+\shape default
+In Proceedings of the IEEE International Conference on Computer Vision,
+ pp.
+ 3551-3558.
+ 2013.
 \end_layout
 
 \end_body
