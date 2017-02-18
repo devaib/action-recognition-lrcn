@@ -143,8 +143,8 @@ int main(int argc, const char* argv[])
     if (argc < 3)
     {
         cerr << "Usage : " << argv[0] << " <frame0> <frame1>" << endl;
-        filename1 = "../data/basketball1.png";
-        filename2 = "../data/basketball2.png";
+        filename1 = "../data/frame0.jpg";
+        filename2 = "../data/frame1.jpg";
     }
     else
     {
