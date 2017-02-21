@@ -4,19 +4,20 @@ import numpy as np
 import random
 from random import randint
 
-class TemporalIter:
+class TemporalIter(mx.io.DataIter):
     def __init__(self, data_names, data_shapes, data,
-                 label_names, label_shapes, label, batch_size=32):
+                 label_names, label_shapes, label, batch_size=16):
         self.batch_size = batch_size
-        self._provide_data = zip(data_names, data_shapes)
-        self._provide_label = zip(label_names, label_shapes)
+        self._data_names = data_names
+        self._label_names = label_names
         self._size = data_shapes[0][0]
         self._cur_batch = 0
         self._current = 0
-        self.data = None
-        self.label = None
+        self._data = None
+        self._label = None
         self.datas = data
         self.labels = label
+        self._get_batch()
 
     def __iter__(self):
         return self
@@ -30,18 +31,21 @@ class TemporalIter:
 
     @property
     def provide_data(self):
-        return self._provide_data
+        return [(k, v.shape) for k, v in self._data.items()]
 
     @property
     def provide_label(self):
-        return self._provide_label
+        return [(k, v.shape) for k, v in self._label.items()]
+
+    def iter_next(self):
+        return self._current < self._size
 
     def next(self):
-        if self._cur_batch < self.batch_size:
+        if self.iter_next():
             self._cur_batch += 1
             self._current += self.batch_size
             self._get_batch()
-            data_batch = mx.io.DataBatch(data=self.data, label=self.label, pad=self.getpad(), index=self.getindex())
+            data_batch = mx.io.DataBatch(data=self._data.values(), label=self._label.values(), pad=self.getpad(), index=self.getindex())
             return data_batch
 
         else:
@@ -56,5 +60,10 @@ class TemporalIter:
 
     def _get_batch(self):
         batch_list = random.sample(xrange(self._size), self.batch_size)
-        self.data = [mx.nd.array(self.datas[batch_list])]
-        self.label = [mx.nd.array(self.labels[batch_list])]
+        # self.data = [mx.nd.array(self.datas[batch_list])]
+        # self.label = [mx.nd.array(self.labels[batch_list])]
+        self._data = {'data': mx.nd.array(self.datas[batch_list])}
+        self._label = {'softmax_label': mx.nd.array(self.labels[batch_list])}
+
+
+

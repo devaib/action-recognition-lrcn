@@ -4,6 +4,8 @@ import numpy as np
 import random
 from iterator import TemporalIter
 from of_prep import stack_optical_flow
+import logging
+
 
 # sym, arg_params, aux_params = mx.model.load_checkpoint('../model/resnet-50/resnet-50', 0)
 
@@ -51,14 +53,21 @@ data = input_vecs
 label_names = ['softmax_label']
 label_shapes = [labels.shape]
 label = labels
-num_batches = 16
+batch_size = 16
 
 data = TemporalIter(data_names, data_shapes, data,
                     label_names, label_shapes, label,
-                    num_batches)
+                    batch_size)
 
+logging.basicConfig(level=logging.INFO)
 mod = mx.mod.Module(symbol=net)
-mod.fit(data, num_epoch=5)
+mod.fit(data,
+        num_epoch=5,
+        batch_end_callback=mx.callback.Speedometer(batch_size, 1),
+        kvstore='device',
+        optimizer='sgd',
+        optimizer_params={'learning_rate': 0.1},
+        eval_metric='acc')
 
 # train_sample_num = input_vecs.shape[0]
 #
