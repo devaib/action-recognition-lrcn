@@ -6,7 +6,7 @@ from PIL import Image
 import os
 import gc
 
-def stackOpticalFlow(filenames, label, width, height):
+def stack_optical_flow(actionname, label, width, height):
     '''
     Params:
         blocks:     list of filenames
@@ -21,15 +21,15 @@ def stackOpticalFlow(filenames, label, width, height):
     first_time = True
     try:
         path = os.path.dirname(os.path.realpath(__file__))
-        op_num = len(os.listdir(os.path.join(path, 'test', 'horizontal')))
+        op_num = len(os.listdir(os.path.join(path, actionname, 'horizontal')))
 
         for op_start in range(op_num - 20):
             fx = []
             fy = []
 
             for i in range(op_start, op_start + 20):
-                path_hort = os.path.join('./test/horizontal', 'boxing_{}.jpg'.format(i))
-                path_vert = os.path.join('./test/vertical', 'boxing_{}.jpg'.format(i))
+                path_hort = os.path.join(actionname, 'horizontal', actionname + '_{}.jpg'.format(i))
+                path_vert = os.path.join(actionname, 'vertical', actionname + '_{}.jpg'.format(i))
                 imgh = Image.open(path_hort)
                 imgv = Image.open(path_vert)
                 imgh = imgh.resize((width, height))
@@ -61,8 +61,8 @@ def stackOpticalFlow(filenames, label, width, height):
         return None, None
 
 
-input_vec, labels = stackOpticalFlow('a', 12 ,150, 100)
-
-cv2.imshow('test', input_vec[0][0].astype('uint8'))
-cv2.imshow('test1', input_vec[0][1].astype('uint8'))
-cv2.waitKey()
+# input_vec, labels = stack_optical_flow('boxing', 0 ,150, 100)
+#
+# cv2.imshow('test', input_vec[0][0].astype('uint8'))
+# cv2.imshow('test1', input_vec[0][1].astype('uint8'))
+# cv2.waitKey()
