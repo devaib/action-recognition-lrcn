@@ -5,6 +5,7 @@ import random
 from iterator import TemporalIter
 from of_prep import stack_optical_flow
 import logging
+import cPickle as pickle
 
 
 # sym, arg_params, aux_params = mx.model.load_checkpoint('../model/resnet-50/resnet-50', 0)
@@ -27,7 +28,7 @@ def get_new_model(symbol, num_classes, layer_name='flatten0'):
 num_classes = 2
 batch_per_gpu = 16
 num_gpus = 1
-ctx = mx.gpu(0)
+ctx = mx.cpu()
 
 sym = mx.sym.load('../model/resnet-50/resnet-50-symbol.json')
 net = get_new_model(sym, num_classes)
@@ -40,11 +41,15 @@ net = get_new_model(sym, num_classes)
 
 prefix = 'resnet-50'
 batch_size = batch_per_gpu * num_gpus
-#TODO: try Pickle
-input_vec0, labels0 = stack_optical_flow('boxing', 0 ,224, 224)
-input_vec1, labels1 = stack_optical_flow('handwaving', 1 ,224, 224)
-input_vecs = np.append(input_vec0, input_vec1, axis=0)
-labels = np.append(labels0, labels1, axis=0)
+# input_vec0, labels0 = stack_optical_flow('boxing', 0 ,224, 224)
+# input_vec1, labels1 = stack_optical_flow('handwaving', 1 ,224, 224)
+# input_vecs = np.append(input_vec0, input_vec1, axis=0)
+# labels = np.append(labels0, labels1, axis=0)
+# input_vecs, labels = input_vec0, labels0
+# pickle.dump(input_vecs, open('input_vecs.p', 'wb')
+# pickle.dump(labels0, open('labels.p', 'wb'))
+input_vecs = pickle.load(open('input_vecs.p', 'rb'))
+labels = pickle.load(open('labels.p', 'rb'))
 
 data_names = ['data']
 data_shapes = [input_vecs.shape]

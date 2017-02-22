@@ -59,9 +59,8 @@ class TemporalIter(mx.io.DataIter):
         return self._cur_batch
 
     def _get_batch(self):
+        # TODO: remove duplication
         batch_list = random.sample(xrange(self._size), self.batch_size)
-        # self.data = [mx.nd.array(self.datas[batch_list])]
-        # self.label = [mx.nd.array(self.labels[batch_list])]
         self._data = {'data': mx.nd.array(self.datas[batch_list])}
         self._label = {'softmax_label': mx.nd.array(self.labels[batch_list])}
 

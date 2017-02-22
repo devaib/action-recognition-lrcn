@@ -6,6 +6,7 @@ from PIL import Image
 import os
 import gc
 
+
 def stack_optical_flow(actionname, label, width, height):
     '''
     Params:
@@ -18,16 +19,17 @@ def stack_optical_flow(actionname, label, width, height):
         input_vec:  ndarray(block x channel x height x width)
         labels:     ndarray(block)
     '''
+    channels = 20
     first_time = True
     try:
         path = os.path.dirname(os.path.realpath(__file__))
         op_num = len(os.listdir(os.path.join(path, actionname, 'horizontal')))
 
-        for op_start in range(op_num - 20):
+        for op_start in range(op_num - channels):
             fx = []
             fy = []
 
-            for i in range(op_start, op_start + 20):
+            for i in range(op_start, op_start + channels):
                 path_hort = os.path.join(actionname, 'horizontal', actionname + '_{}.jpg'.format(i))
                 path_vert = os.path.join(actionname, 'vertical', actionname + '_{}.jpg'.format(i))
                 imgh = Image.open(path_hort)
