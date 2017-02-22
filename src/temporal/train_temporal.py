@@ -27,6 +27,7 @@ def get_new_model(symbol, num_classes, layer_name='flatten0'):
 num_classes = 2
 batch_per_gpu = 16
 num_gpus = 1
+ctx = mx.gpu(0)
 
 sym = mx.sym.load('../model/resnet-50/resnet-50-symbol.json')
 net = get_new_model(sym, num_classes)
@@ -41,11 +42,9 @@ prefix = 'resnet-50'
 batch_size = batch_per_gpu * num_gpus
 #TODO: try Pickle
 input_vec0, labels0 = stack_optical_flow('boxing', 0 ,224, 224)
-# input_vec1, labels1 = stack_optical_flow('handwaving', 1 ,224, 224)
-# input_vecs = np.append(input_vec0, input_vec1, axis=0)
-# labels = np.append(labels0, labels1, axis=0)
-input_vecs = input_vec0
-labels = labels0
+input_vec1, labels1 = stack_optical_flow('handwaving', 1 ,224, 224)
+input_vecs = np.append(input_vec0, input_vec1, axis=0)
+labels = np.append(labels0, labels1, axis=0)
 
 data_names = ['data']
 data_shapes = [input_vecs.shape]
@@ -60,10 +59,10 @@ data = TemporalIter(data_names, data_shapes, data,
                     batch_size)
 
 logging.basicConfig(level=logging.INFO)
-mod = mx.mod.Module(symbol=net)
+mod = mx.mod.Module(symbol=net, context=ctx)
 mod.fit(data,
         num_epoch=5,
-        batch_end_callback=mx.callback.Speedometer(batch_size, 1),
+        batch_end_callback=mx.callback.Speedometer(batch_size, 10),
         kvstore='device',
         optimizer='sgd',
         optimizer_params={'learning_rate': 0.1},
