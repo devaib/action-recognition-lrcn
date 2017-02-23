@@ -127,9 +127,9 @@ for full_root, dirs, files in os.walk(filepath):
             if not os.path.exists(path_vert):
                 os.makedirs(path_vert)
             cv2.imwrite(os.path.join(path_horz,
-                                     '{}_{}_frame{}.jpg'.format(actionname, videoname, count)), horz)
+                                     '{}.jpg'.format(count)), horz)
             cv2.imwrite(os.path.join(path_vert,
-                                     '{}_{}_frame{}.jpg'.format(actionname, videoname, count)), vert)
+                                     '{}.jpg'.format(count)), vert)
             if debug:
                 cv2.imshow('Vertical Component', vert)
                 cv2.imshow('Horizontal Component', horz)
