@@ -5,14 +5,14 @@ class Anno(object):
     """
     Parameters:
 
-        person_num: int
+        person_num: str
             number of the person;
             training:   11 - 18,
             validation: 19 - 25, 01, 04,
             testing:    22, 02, 03, 05 - 10
         action: str
             name of of action
-        condition:
+        condition: str
             one of four conditions
         frames: dict
             dictionary for frames to different conditions
@@ -50,9 +50,6 @@ class Annos(object):
 
     def add_anno(self, anno):
         self.annos.append(anno)
-
-    def get_anno_by_index(self, idx):
-        return self.annos[idx]
 
     def get_anno(self, person_num, action, condition):
         for anno in self.annos:

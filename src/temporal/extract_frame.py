@@ -4,6 +4,9 @@ import time
 import cv2
 import re
 from annotation import Anno, Annos
+from opt_flow import *
+
+debug = False
 
 p_num = re.compile('\d+')   # pattern
 
@@ -55,24 +58,30 @@ for full_root, dirs, files in os.walk(filepath):
         frames = anno.get_frames()  # list of 4 annotations
         person_num = anno.get_person_num()
         condition = anno.get_condition()
-        if 11 <= person_num <= 18:
+        if 11 <= int(person_num) <= 18:
             setname = 'train'
-        if 19 <= person_num <= 25 or person_num in [1, 4]:
+        elif 19 <= int(person_num) <= 25 or int(person_num) in [1, 4]:
             setname = 'val'
         else:
             setname = 'test'
 
-        path = os.path.dirname(os.path.realpath(__file__))
-        path = os.path.join(path, '../data/human-action/frames', setname,
-                            root, 'person'+person_num, condition)
-        if not os.path.exists(path):
-            os.makedirs(path)
+        actionname = root
+        # frame path
+        path0 = os.path.dirname(os.path.realpath(__file__))
+        path = os.path.join(path0, '../data/human-action/frames', setname,
+                            actionname, 'person'+person_num, condition)
+
+        # optical flow path
+        of_path = os.path.join(path0, '../data/human-action/optical-flow', setname,
+                               actionname, 'person'+person_num, condition)
+        prevgray = None
 
         count = 0
         while cap.isOpened():
             count += 1
-            # if cv2.waitKey(10) & 0xFF == ord('q'):
-            #     break
+            if debug:
+                if cv2.waitKey(10) & 0xFF == ord('q'):
+                    break
             ret,frame = cap.read()
             if not ret:
                 break
@@ -86,18 +95,48 @@ for full_root, dirs, files in os.walk(filepath):
             elif frames[3][0] <= count <= frames[3][1]:
                 sub = '4'
             else:
+                prevgray = None
                 continue
 
-            cv2.imshow('window-name', frame)
-            imagename = root + "_" + videoname + "_frame%d.jpg" % count
+            # extract frames
+            if debug:
+                cv2.imshow('frame', frame)
+            imagename = actionname + "_" + videoname + "_frame%d.jpg" % count
             fullpath = os.path.join(path, sub)
             if not os.path.exists(fullpath):
                 os.makedirs(fullpath)
             cv2.imwrite(os.path.join(fullpath, imagename), frame)
 
+            # generate optical flow
+            if prevgray is None:
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                prevgray = gray
+                continue
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            flow = cv2.calcOpticalFlowFarneback(prevgray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+            prevgray = gray
+
+            horz = cv2.normalize(flow[..., 0], None, 0, 255, cv2.NORM_MINMAX)
+            vert = cv2.normalize(flow[..., 1], None, 0, 255, cv2.NORM_MINMAX)
+            horz = horz.astype('uint8')
+            vert = vert.astype('uint8')
+            path_horz = os.path.join(of_path, sub, 'horizontal')
+            path_vert = os.path.join(of_path, sub, 'vertical')
+            if not os.path.exists(path_horz):
+                os.makedirs(path_horz)
+            if not os.path.exists(path_vert):
+                os.makedirs(path_vert)
+            cv2.imwrite(os.path.join(path_horz,
+                                     '{}_{}_frame{}.jpg'.format(actionname, videoname, count)), horz)
+            cv2.imwrite(os.path.join(path_vert,
+                                     '{}_{}_frame{}.jpg'.format(actionname, videoname, count)), vert)
+            if debug:
+                cv2.imshow('Vertical Component', vert)
+                cv2.imshow('Horizontal Component', horz)
+                cv2.imshow('flow', draw_flow(gray, flow))
+                cv2.imshow('flow HSV', draw_hsv(flow))
 
         cap.release()
-
         elapsed_time = time.time() - start_time
         m, s = divmod(elapsed_time, 60)
         h, m = divmod(m, 60)

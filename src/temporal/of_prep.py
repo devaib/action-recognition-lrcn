@@ -6,19 +6,24 @@ from PIL import Image
 import os
 import gc
 
+def
 
 def stack_optical_flow(actionname, label, width, height):
-    '''
+    """
     Params:
-        blocks:     list of filenames
-        temporal_   train_data: ap.array of labels
-        width:   resized image width
-        height:   resized image height
+        actionname: str
+            name of action
+        label: num
+            index of label
+        width: num
+            resized image width
+        height: num
+            resized image height
 
     Return:
         input_vec:  ndarray(block x channel x height x width)
         labels:     ndarray(block)
-    '''
+    """
     channels = 20
     first_time = True
     try:
