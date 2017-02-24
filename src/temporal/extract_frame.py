@@ -140,6 +140,6 @@ for full_root, dirs, files in os.walk(filepath):
         elapsed_time = time.time() - start_time
         m, s = divmod(elapsed_time, 60)
         h, m = divmod(m, 60)
-        print "time: %d:%02d:%02d" % (h, m, s)
+        print "%d:%02d:%02d" % (h, m, s)
 
 
