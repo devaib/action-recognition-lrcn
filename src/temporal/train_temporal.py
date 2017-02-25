@@ -1,9 +1,8 @@
 import sys; sys.path.append('/home/binghao/workspace/mxnet/python')
 import mxnet as mx
-import numpy as np
-import random
 from iterator import TemporalIter
-from of_prep import stack_optical_flow
+import os
+import numpy as np
 import logging
 import cPickle as pickle
 
@@ -25,13 +24,15 @@ def get_new_model(symbol, num_classes, layer_name='flatten0'):
     # new_args = dict({k:arg_params[k] for k in arg_params if 'fc1' not in k})
     return net
 
-num_classes = 2
+num_classes = 6
 batch_per_gpu = 16
 num_gpus = 1
 ctx = mx.gpu(0)
 
 sym = mx.sym.load('../model/resnet-50/resnet-50-symbol.json')
 net = get_new_model(sym, num_classes)
+prefix = 'resnet-50'
+batch_size = batch_per_gpu * num_gpus
 
 # plot network
 # from mxnet import visualization
@@ -39,17 +40,52 @@ net = get_new_model(sym, num_classes)
 # a = mx.viz.plot_network(sym, shape={"data":(4, 20, 224, 224)})
 # a.render('resnet-50')
 
-prefix = 'resnet-50'
-batch_size = batch_per_gpu * num_gpus
-input_vec0, labels0 = stack_optical_flow('boxing', 0 ,224, 224)
-input_vec1, labels1 = stack_optical_flow('handwaving', 1 ,224, 224)
-input_vecs = np.append(input_vec0, input_vec1, axis=0)
-labels = np.append(labels0, labels1, axis=0)
-# input_vecs, labels = input_vec0, labels0
-# pickle.dump(input_vecs, open('input_vecs.p', 'wb')
-# pickle.dump(labels0, open('labels.p', 'wb'))
-# input_vecs = pickle.load(open('input_vecs.p', 'rb'))
-# labels = pickle.load(open('labels.p', 'rb'))
+# load data
+filepath = os.path.dirname(os.path.realpath(__file__))
+path = os.path.join(filepath, '../cache/trainval')
+inputvec_path = os.path.join(path, 'inputvec')
+label_path = os.path.join(path, 'label')
+input_vecs = None
+labels = None
+
+
+def fetch_trainval_data():
+    setnames = ['train']
+    actionnames = ['boxing', 'handclapping', 'handwaving', 'jogging', 'running', 'walking']
+    persons = ['person'+str(idx).zfill(2) for idx in range(11, 12)]
+    conditions = ['d1', 'd2', 'd3', 'd4']
+    subs = ['1', '2', '3', '4']
+    filelist = []
+    filepath = os.path.dirname(os.path.realpath(__file__))
+    path = os.path.join(filepath, '../cache/trainval/inputvec')
+    for setname in setnames:
+        for actionname in actionnames:
+            for person in persons:
+                for condition in conditions:
+                    for sub in subs:
+                        filename = '_'.join([setname, actionname, person, condition, sub]) + '.p'
+                        if os.path.exists(os.path.join(path, filename)):
+                            filelist.append(filename)
+
+    return filelist
+
+# namelist = ['train_boxing_person11_d1_1.p',
+#             'train_handclapping_person11_d1_1.p',
+#             'train_handwaving_person11_d1_1.p',
+#             'train_jogging_person11_d1_1.p',
+#             'train_running_person11_d1_1.p',
+#             'train_walking_person11_d1_1.p']
+namelist = fetch_trainval_data()
+for name in namelist:
+    print 'processing ' + name
+    input_vec0 = pickle.load(open(os.path.join(inputvec_path, name), 'rb'))
+    label0 = pickle.load(open(os.path.join(label_path, name), 'rb'))
+    if input_vecs is None or labels is None:
+        input_vecs = input_vec0
+        labels = label0
+    else:
+        input_vecs = np.append(input_vecs, input_vec0, axis=0)
+        labels = np.append(labels, label0, axis=0)
 
 data_names = ['data']
 data_shapes = [input_vecs.shape]
@@ -61,13 +97,13 @@ batch_size = 16
 
 data = TemporalIter(data_names, data_shapes, data,
                     label_names, label_shapes, label,
-                    batch_size)
+                    batch_size, shuffle=True)
 
 logging.basicConfig(level=logging.INFO)
 mod = mx.mod.Module(symbol=net, context=ctx)
 mod.fit(data,
-        num_epoch=5,
-        batch_end_callback=mx.callback.Speedometer(batch_size, 10),
+        num_epoch=50,
+        batch_end_callback=mx.callback.Speedometer(batch_size, 50),
         kvstore='device',
         optimizer='sgd',
         optimizer_params={'learning_rate': 0.1},

@@ -9,6 +9,9 @@ import time
 
 
 def prep_trainval_data():
+    """
+    Iterate through dataset
+    """
     setnames = ['train', 'val', 'test']
     actionnames = ['boxing', 'handclapping', 'handwaving', 'jogging', 'running', 'walking']
     persons = ['person'+str(idx).zfill(2) for idx in range(1, 26)]
@@ -50,10 +53,17 @@ def save_cache(setname, actionname, person, condition, sub, path=None):
     cache_path = '../cache'
     filepath = os.path.dirname(os.path.realpath(__file__))
     train_path = os.path.join(filepath, path, setname)
-    input_vec, label = stack_optical_flow(os.path.join(train_path, actionname, person, condition, sub), 0 ,150, 100)
+    action_dic = {'boxing': 0,
+                  'handclapping': 1,
+                  'handwaving': 2,
+                  'jogging': 3,
+                  'running': 4,
+                  'walking': 5}
+    input_vec, label = stack_optical_flow(os.path.join(train_path, actionname, person, condition, sub),
+                                          action_dic[actionname], 100, 100)
     if input_vec is None:
         return False
-    if setname is ('train' or 'val'):
+    if setname is 'train' or setname is 'val':
         folder = 'trainval'
     elif setname is 'test':
         folder = 'test'
@@ -106,7 +116,7 @@ def stack_optical_flow(path, label, width, height):
         filepath = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(filepath, '..', path)
         batch_path = os.path.join(path, 'horizontal')
-        op_num = len(os.listdir(batch_path))
+        # op_num = len(os.listdir(batch_path))
 
         # traverse hort and vert folder
         for root, dirs, files in os.walk(path):

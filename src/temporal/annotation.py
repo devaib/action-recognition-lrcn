@@ -42,7 +42,6 @@ class Anno(object):
 class Annos(object):
     """
     list of Annotations
-    Parameters:
     """
     def __init__(self):
         self.size = 0

@@ -1,12 +1,11 @@
 import sys; sys.path.append('/home/binghao/workspace/mxnet/python')
 import mxnet as mx
 import numpy as np
-import random
-from random import randint
 
 class TemporalIter(mx.io.DataIter):
     def __init__(self, data_names, data_shapes, data,
-                 label_names, label_shapes, label, batch_size=16):
+                 label_names, label_shapes, label,
+                 batch_size=16, shuffle=False):
         self.batch_size = batch_size
         self._data_names = data_names
         self._label_names = label_names
@@ -15,8 +14,16 @@ class TemporalIter(mx.io.DataIter):
         self._current = 0
         self._data = None
         self._label = None
-        self.datas = data
-        self.labels = label
+
+        if shuffle:
+            ind = np.arange(self._size)
+            np.random.shuffle(ind)
+            self.datas = data[ind]
+            self.labels = label[ind]
+        else:
+            self.datas = data
+            self.labels = label
+
         self._get_batch()
 
     def __iter__(self):
@@ -45,22 +52,29 @@ class TemporalIter(mx.io.DataIter):
             self._cur_batch += 1
             self._current += self.batch_size
             self._get_batch()
-            data_batch = mx.io.DataBatch(data=self._data.values(), label=self._label.values(), pad=self.getpad(), index=self.getindex())
+            data_batch = mx.io.DataBatch(data=self._data.values(),
+                                         label=self._label.values(),
+                                         pad=self.getpad(),
+                                         index=self.getindex())
             return data_batch
 
         else:
             raise StopIteration
 
     def getpad(self):
-        pad = self._cur_batch + self.batch_size - self._size
+        pad = self._current + self.batch_size - self._size
         return 0 if pad < 0 else pad
 
     def getindex(self):
         return self._cur_batch
 
     def _get_batch(self):
-        # TODO: remove duplication
-        batch_list = random.sample(xrange(self._size), self.batch_size)
+        padding = self.getpad()
+        if padding is 0:
+            batch_list = range(self._current, self._current + self.batch_size)
+        else:
+            batch_list = range(self._current, self._size)
+            batch_list += range(0, padding)
         self._data = {'data': mx.nd.array(self.datas[batch_list])}
         self._label = {'softmax_label': mx.nd.array(self.labels[batch_list])}
 
