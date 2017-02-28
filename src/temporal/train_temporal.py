@@ -25,14 +25,10 @@ def get_new_model(symbol, num_classes, layer_name='flatten0'):
     return net
 
 num_classes = 6
-batch_per_gpu = 16
-num_gpus = 1
 ctx = mx.gpu(0)
 
 sym = mx.sym.load('../model/resnet-50/resnet-50-symbol.json')
 net = get_new_model(sym, num_classes)
-prefix = 'resnet-50'
-batch_size = batch_per_gpu * num_gpus
 
 # plot network
 # from mxnet import visualization
@@ -52,7 +48,7 @@ labels = None
 def fetch_trainval_data():
     setnames = ['train']
     actionnames = ['boxing', 'handclapping', 'handwaving', 'jogging', 'running', 'walking']
-    persons = ['person'+str(idx).zfill(2) for idx in range(11, 12)]
+    persons = ['person'+str(idx).zfill(2) for idx in range(11, 15)]
     conditions = ['d1', 'd2', 'd3', 'd4']
     subs = ['1', '2', '3', '4']
     filelist = []
@@ -69,13 +65,8 @@ def fetch_trainval_data():
 
     return filelist
 
-# namelist = ['train_boxing_person11_d1_1.p',
-#             'train_handclapping_person11_d1_1.p',
-#             'train_handwaving_person11_d1_1.p',
-#             'train_jogging_person11_d1_1.p',
-#             'train_running_person11_d1_1.p',
-#             'train_walking_person11_d1_1.p']
 namelist = fetch_trainval_data()
+# TODO: rewrite iteration
 for name in namelist:
     print 'processing ' + name
     input_vec0 = pickle.load(open(os.path.join(inputvec_path, name), 'rb'))
@@ -93,7 +84,7 @@ data = input_vecs
 label_names = ['softmax_label']
 label_shapes = [labels.shape]
 label = labels
-batch_size = 16
+batch_size = 32
 
 data = TemporalIter(data_names, data_shapes, data,
                     label_names, label_shapes, label,
@@ -101,13 +92,16 @@ data = TemporalIter(data_names, data_shapes, data,
 
 logging.basicConfig(level=logging.INFO)
 mod = mx.mod.Module(symbol=net, context=ctx)
+model_prefix = 'resnet-50-kth'
+checkpoint = mx.callback.do_checkpoint(model_prefix, 5)
 mod.fit(data,
-        num_epoch=50,
-        batch_end_callback=mx.callback.Speedometer(batch_size, 50),
+        num_epoch=20,
+        batch_end_callback=mx.callback.Speedometer(batch_size, 100),
         kvstore='device',
         optimizer='sgd',
         optimizer_params={'learning_rate': 0.1},
-        eval_metric='acc')
+        eval_metric='acc',
+        epoch_end_callback=checkpoint)
 
 # train_sample_num = input_vecs.shape[0]
 #
