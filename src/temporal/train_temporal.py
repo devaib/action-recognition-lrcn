@@ -1,10 +1,11 @@
 import sys; sys.path.append('/home/binghao/workspace/mxnet/python')
 import mxnet as mx
-from iterator import TemporalIter
 import os
 import numpy as np
 import logging
 import cPickle as pickle
+from iterator import TemporalIter
+from kth import KTH
 
 
 # sym, arg_params, aux_params = mx.model.load_checkpoint('../model/resnet-50/resnet-50', 0)
@@ -45,50 +46,47 @@ input_vecs = None
 labels = None
 
 
-def fetch_trainval_data():
-    setnames = ['train']
-    actionnames = ['boxing', 'handclapping', 'handwaving', 'jogging', 'running', 'walking']
-    persons = ['person'+str(idx).zfill(2) for idx in range(11, 15)]
-    conditions = ['d1', 'd2', 'd3', 'd4']
-    subs = ['1', '2', '3', '4']
-    filelist = []
-    filepath = os.path.dirname(os.path.realpath(__file__))
-    path = os.path.join(filepath, '../cache/trainval/inputvec')
-    for setname in setnames:
-        for actionname in actionnames:
-            for person in persons:
-                for condition in conditions:
-                    for sub in subs:
-                        filename = '_'.join([setname, actionname, person, condition, sub]) + '.p'
-                        if os.path.exists(os.path.join(path, filename)):
-                            filelist.append(filename)
+# def fetch_trainval_data():
+#     setnames = ['train']
+#     actionnames = ['boxing', 'handclapping', 'handwaving', 'jogging', 'running', 'walking']
+#     persons = ['person'+str(idx).zfill(2) for idx in range(11, 15)]
+#     conditions = ['d1', 'd2', 'd3', 'd4']
+#     subs = ['1', '2', '3', '4']
+#     filelist = []
+#     filepath = os.path.dirname(os.path.realpath(__file__))
+#     path = os.path.join(filepath, '../cache/trainval/inputvec')
+#     for setname in setnames:
+#         for actionname in actionnames:
+#             for person in persons:
+#                 for condition in conditions:
+#                     for sub in subs:
+#                         filename = '_'.join([setname, actionname, person, condition, sub]) + '.p'
+#                         if os.path.exists(os.path.join(path, filename)):
+#                             filelist.append(filename)
+#
+#     return filelist
+#
+# namelist = fetch_trainval_data()
+# # TODO: rewrite iteration
+# for name in namelist:
+#     print 'processing ' + name
+#     input_vec0 = pickle.load(open(os.path.join(inputvec_path, name), 'rb'))
+#     label0 = pickle.load(open(os.path.join(label_path, name), 'rb'))
+#     if input_vecs is None or labels is None:
+#         input_vecs = input_vec0
+#         labels = label0
+#     else:
+#         input_vecs = np.append(input_vecs, input_vec0, axis=0)
+#         labels = np.append(labels, label0, axis=0)
 
-    return filelist
-
-namelist = fetch_trainval_data()
-# TODO: rewrite iteration
-for name in namelist:
-    print 'processing ' + name
-    input_vec0 = pickle.load(open(os.path.join(inputvec_path, name), 'rb'))
-    label0 = pickle.load(open(os.path.join(label_path, name), 'rb'))
-    if input_vecs is None or labels is None:
-        input_vecs = input_vec0
-        labels = label0
-    else:
-        input_vecs = np.append(input_vecs, input_vec0, axis=0)
-        labels = np.append(labels, label0, axis=0)
-
+# load data
+imdb = KTH('../cache/trainval')
 data_names = ['data']
-data_shapes = [input_vecs.shape]
-data = input_vecs
+data_shapes = (100, 100)
 label_names = ['softmax_label']
-label_shapes = [labels.shape]
-label = labels
-batch_size = 32
+batch_size = 128
 
-data = TemporalIter(data_names, data_shapes, data,
-                    label_names, label_shapes, label,
-                    batch_size, shuffle=True)
+data = TemporalIter(imdb, data_shapes, batch_size, shuffle=True, is_train=True)
 
 logging.basicConfig(level=logging.INFO)
 mod = mx.mod.Module(symbol=net, context=ctx)
@@ -96,7 +94,7 @@ model_prefix = 'resnet-50-kth'
 checkpoint = mx.callback.do_checkpoint(model_prefix, 5)
 mod.fit(data,
         num_epoch=20,
-        batch_end_callback=mx.callback.Speedometer(batch_size, 100),
+        batch_end_callback=mx.callback.Speedometer(batch_size, 10),
         kvstore='device',
         optimizer='sgd',
         optimizer_params={'learning_rate': 0.1},

@@ -98,7 +98,7 @@ for full_root, dirs, files in os.walk(filepath):
                 prevgray = None
                 continue
 
-            # extract frames
+            # extract frames(not really necessary)
             if debug:
                 cv2.imshow('frame', frame)
             imagename = actionname + "_" + videoname + "_frame%d.jpg" % count

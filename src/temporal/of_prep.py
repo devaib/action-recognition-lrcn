@@ -75,15 +75,21 @@ def save_cache(setname, actionname, person, condition, sub, path=None):
     if not os.path.exists(label_dir):
         os.makedirs(label_dir)
     try:
-        pickle.dump(input_vec, open(os.path.join(input_vec_dir, pickle_name + '.p'), 'wb'))
-        pickle.dump(label, open(os.path.join(label_dir, pickle_name + '.p'), 'wb'))
-        print 'successfully save to ' + os.path.join(input_vec_dir, pickle_name + '.p')
+        # store each input_vec separately
+        for i in range(input_vec.shape[0]):
+            # keep the 4 dimension of input_vec
+            pickle.dump(input_vec[i:i+1], open(os.path.join(input_vec_dir, pickle_name + '_' + str(i) + '.p'), 'wb'))
+            pickle.dump(label[i], open(os.path.join(label_dir, pickle_name + '_' + str(i) + '.p'), 'wb'))
+        print 'successfully save to ' + os.path.join(input_vec_dir, pickle_name)
     except IOError:
         print 'failed to save to ' + os.path.join(input_vec_dir, pickle_name + '.p')
     return True
 
 
 def compare(a, b):
+    """
+    auxillary function for sort()
+    """
     num0 = int(a.split('.')[0])
     num1 = int(b.split('.')[0])
     if num0 > num1:
