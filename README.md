@@ -1,4 +1,4 @@
-# dangerous-action-recognition
+# Action Recognition with LRCN in MXNet
 
 ## Course project for [ELG5378](http://www.site.uottawa.ca/~jyzhao/courses/elg5378/elg5378_2017w.html)
 
@@ -8,6 +8,3 @@
 - Mar 6 - Mar20 Tinker the network, make demo and prepare for presentation;
 - Apr 3 - Apr 24 Submit final project report.
 
-### References:
-- [Two-Stream Convolutional Networks for Action Recognition in Videos](http://papers.nips.cc/paper/5353-two-stream-convolutional-networks-for-action-recognition-in-videos.pdf)
-- [Real-time Action Recognition with Enhanced Motion Vector CNNs](https://wanglimin.github.io/papers/ZhangWWQW_CVPR16.pdf)
