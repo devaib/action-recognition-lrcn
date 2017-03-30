@@ -72,8 +72,8 @@ class ImageIter(mx.io.DataIter):
             self._cur_batch += 1
             self._current += self.batch_size
             self._get_batch()
-            data_batch = mx.io.DataBatch(data=self.data_all.values(),
-                                         label=self.label_all.values(),
+            data_batch = mx.io.DataBatch(data=self.data_all,
+                                         label=self.label_all,
                                          pad=self.getpad(),
                                          index=self.getindex())
             return data_batch
@@ -127,7 +127,8 @@ class ImageIter(mx.io.DataIter):
         if self.is_train:
             self._label = {'softmax_label': np.array(batch_label)}
             init_state_names = [x[0] for x in self.init_states]
-            self.data_all = [mx.nd.array(self._data['data'])] + self.init_state_arrays
+            # self.data_all = [mx.nd.array(self._data['data'])] + self.init_state_arrays
+            self.data_all = [self._data['data']] + self.init_state_arrays
             self.label_all = [mx.nd.array(self._label['softmax_label'])]
             self.data_names = ['data'] + init_state_names
             self.label_names = ['softmax_label']

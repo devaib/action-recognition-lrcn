@@ -17,14 +17,15 @@ num_lstm_layer = 1
 vocab_size = 128
 num_embed = 256
 num_hidden = 384
-num_label = 84
+# TODO: #label
+num_label = 6
 num_epoch = 2
 learning_rate = 0.01
-momemtum = 0.0
-devs = mx.cpu()
+momentum = 0.0
+devs = mx.gpu(0)
 
 prev_sym = get_cnn(seq_len)
-sym = lstm_unroll(prev_sym, num_lstm_layer, seq_len,
+symbol = lstm_unroll(prev_sym, num_lstm_layer, seq_len,
                   num_hidden=num_hidden, num_embed=num_embed,
                   num_label=num_label, dropout=0.2)
 
@@ -39,9 +40,25 @@ data_name = 'data'
 data_shape = (100, 100)
 label_name = 'softmax_label'
 
-data = ImageIter(imdb, seq_len, buckets, batch_size, data_shape,
+data_train = ImageIter(imdb, seq_len, buckets, batch_size, data_shape,
                  init_states, data_name, label_name,
                  shuffle=True, is_train=True)
+
+
+# Train a LSTM network as simple as feedforward network
+model = mx.model.FeedForward(ctx=devs,
+                             symbol=symbol,
+                             num_epoch=num_epoch,
+                             learning_rate=learning_rate,
+                             momentum=momentum,
+                             wd=0.0001,
+                             initializer=mx.init.Xavier(factor_type="in", magnitude=2.34))
+
+# Fit it
+model.fit(X=data_train,
+          eval_metric='acc',
+          batch_end_callback=mx.callback.Speedometer(batch_size, 50),
+          epoch_end_callback=mx.callback.do_checkpoint("lrcn"))
 
 
 
