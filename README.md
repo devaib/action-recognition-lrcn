@@ -1,4 +1,4 @@
-# Action Recognition with LRCN in MXNet
+# Action Recognition with LRCN(MXNet)
 
 ## Course project for [ELG5378](http://www.site.uottawa.ca/~jyzhao/courses/elg5378/elg5378_2017w.html)
 
