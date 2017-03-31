@@ -9,6 +9,14 @@ import logging
 reload(logging)
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.DEBUG, datefmt='%I:%M:%S')
 
+# Evaluation
+def Perplexity(label, pred):
+    label = label.T.reshape((-1,))
+    loss = 0.
+    for i in range(pred.shape[0]):
+        loss += -np.log(max(1e-10, pred[i][int(label[i])]))
+    return np.exp(loss / label.size)
+
 img_size = 227
 batch_size = 4
 seq_len = 20
@@ -17,12 +25,12 @@ num_lstm_layer = 1
 vocab_size = 128
 num_embed = 256
 num_hidden = 384
-# TODO: #label
 num_label = 6
 num_epoch = 2
 learning_rate = 0.01
 momentum = 0.0
-devs = mx.gpu(0)
+# devs = mx.gpu(0)
+devs = mx.cpu()
 
 prev_sym = get_cnn(seq_len)
 symbol = lstm_unroll(prev_sym, num_lstm_layer, seq_len,
@@ -56,8 +64,9 @@ model = mx.model.FeedForward(ctx=devs,
 
 # Fit it
 model.fit(X=data_train,
-          eval_metric='acc',
-          batch_end_callback=mx.callback.Speedometer(batch_size, 50),
+          # eval_metric='acc',
+          eval_metric = mx.metric.np(Perplexity),
+          batch_end_callback=mx.callback.Speedometer(batch_size, 1),
           epoch_end_callback=mx.callback.do_checkpoint("lrcn"))
 
 

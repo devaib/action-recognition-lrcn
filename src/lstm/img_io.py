@@ -2,6 +2,25 @@ import sys; sys.path.insert(0, "../../../python")
 import numpy as np
 import mxnet as mx
 
+class SimpleBatch(object):
+    def __init__(self, data_names, data, label_names, label, bucket_key):
+        self.data = data
+        self.label = label
+        self.data_names = data_names
+        self.label_names = label_names
+
+        self.bucket_key = bucket_key
+        self.pad = 0
+        self.index = None
+
+    @property
+    def provide_data(self):
+        return [(n, x.shape) for n, x in zip(self.data_names, self.data)]
+
+    @property
+    def provide_label(self):
+        return [(n, x.shape) for n, x in zip(self.label_names, self.label)]
+
 class ImageIter(mx.io.DataIter):
     def __init__(self, imdb, seq_len, buckets, batch_size, data_shape,
                  init_states, data_name='data', label_name='label',
@@ -21,9 +40,6 @@ class ImageIter(mx.io.DataIter):
         self.batch_size = batch_size
         self.init_states = init_states
         self.init_state_arrays = [mx.nd.zeros(x[1]) for x in init_states]
-
-        # self.provide_data = [('data', (batch_size, self.default_bucket_key))] + init_states
-        # self.provide_label = [('softmax_label', (self.batch_size, self.default_bucket_key))]
 
         # from TemporalIter
         self._imdb = imdb
@@ -56,12 +72,10 @@ class ImageIter(mx.io.DataIter):
 
     @property
     def provide_data(self):
-        # return [(k, v.shape) for k, v in self._data.items()]
         return [(n, x.shape) for n, x in zip(self.data_names, self.data_all)]
 
     @property
     def provide_label(self):
-        # return [(k, v.shape) for k, v in self._label.items()]
         return [(n, x.shape) for n, x in zip(self.label_names, self.label_all)]
 
     def iter_next(self):
@@ -72,10 +86,13 @@ class ImageIter(mx.io.DataIter):
             self._cur_batch += 1
             self._current += self.batch_size
             self._get_batch()
-            data_batch = mx.io.DataBatch(data=self.data_all,
-                                         label=self.label_all,
-                                         pad=self.getpad(),
-                                         index=self.getindex())
+            # data_batch = mx.io.DataBatch(data=self.data_all,
+            #                              label=self.label_all,
+            #                              pad=self.getpad(),
+            #                              index=self.getindex())
+            data_batch = SimpleBatch(self.data_names, self.data_all,
+                                     self.label_names, self.label_all,
+                                     self.buckets[0])
             return data_batch
 
         else:
@@ -89,18 +106,6 @@ class ImageIter(mx.io.DataIter):
         return self._cur_batch
 
     def _get_batch(self):
-        # padding = self.getpad()
-        # if padding is 0:
-        #     batch_list = range(self._current, self._current + self.batch_size)
-        # else:
-        #     batch_list = range(self._current, self._size)
-        #     batch_list += range(0, padding)
-        # self._data = {'data': mx.nd.array(self.datas[batch_list])}
-        # if self.is_train:
-        #     self._label = {'softmax_label': mx.nd.array(self.labels[batch_list])}
-        # else:
-        #     self._label = {'softmax_label': None}
-
         batch_inputvec = mx.nd.zeros((self.batch_size, 20, self._data_shape[0], self._data_shape[1]))
         batch_label = []
         for i in range(self.batch_size):
@@ -123,17 +128,17 @@ class ImageIter(mx.io.DataIter):
                 # TODO: stretch label for multiple outputs
                 label = np.repeat(label, self.seq_len)
                 batch_label.append(label)
-        self._data = {'data': batch_inputvec}
+        self._data = {self.data_name: batch_inputvec}
         if self.is_train:
-            self._label = {'softmax_label': np.array(batch_label)}
+            self._label = {self.label_name: np.array(batch_label)}
             init_state_names = [x[0] for x in self.init_states]
             # self.data_all = [mx.nd.array(self._data['data'])] + self.init_state_arrays
-            self.data_all = [self._data['data']] + self.init_state_arrays
-            self.label_all = [mx.nd.array(self._label['softmax_label'])]
-            self.data_names = ['data'] + init_state_names
-            self.label_names = ['softmax_label']
+            self.data_all = [self._data[self.data_name]] + self.init_state_arrays
+            self.label_all = [mx.nd.array(self._label[self.label_name])]
+            self.data_names = [self.data_name] + init_state_names
+            self.label_names = [self.label_name]
         else:
-            self._label = {'softmax_label': None}
+            self._label = {self.label_name: None}
 
 
 

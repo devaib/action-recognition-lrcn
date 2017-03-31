@@ -5,13 +5,13 @@ import pprint
 from collections import namedtuple
 
 pp = pprint.PrettyPrinter(indent=4)
-batch_size = 32
-seq_len = 3
+batch_size = 4
+seq_len = 20
 num_lstm_layer = 1
 vocab_size = 128
 num_embed = 256
 num_hidden = 384
-num_label = 84
+num_label = 6
 
 # CNN
 data = mx.symbol.Variable(name="data")
