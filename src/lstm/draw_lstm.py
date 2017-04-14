@@ -6,7 +6,7 @@ from collections import namedtuple
 
 pp = pprint.PrettyPrinter(indent=4)
 batch_size = 4
-seq_len = 20
+seq_len = 10
 num_lstm_layer = 1
 vocab_size = 128
 num_embed = 256

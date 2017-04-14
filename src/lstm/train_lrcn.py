@@ -19,7 +19,7 @@ def Perplexity(label, pred):
 
 img_size = 227
 batch_size = 4
-seq_len = 20
+seq_len = 10
 buckets = [seq_len]
 num_lstm_layer = 1
 vocab_size = 128

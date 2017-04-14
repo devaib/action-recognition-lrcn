@@ -84,7 +84,6 @@ def lstm(num_hidden, indata, prev_state, param, seqidx, layeridx, dropout=0.):
 def lstm_unroll(prev_sym, num_lstm_layer, seq_len,
                 num_hidden, num_embed, num_label, dropout=0.):
 
-    embed_weight = mx.sym.Variable("embed_weight")
     cls_weight = mx.sym.Variable("cls_weight")
     cls_bias = mx.sym.Variable("cls_bias")
     param_cells = []
@@ -134,10 +133,49 @@ def lstm_unroll(prev_sym, num_lstm_layer, seq_len,
 
     return sm
 
-# intput shapes
-# init_c = [('l%d_init_c'%l, (batch_size, num_hidden)) for l in range(num_lstm_layer)]
-# init_h = [('l%d_init_h'%l, (batch_size, num_hidden)) for l in range(num_lstm_layer)]
-# init_states = init_c + init_h
-#
-# data_shape = dict([('data', (batch_size, seq_len, img_size, img_size)),
-#                    ('softmax_label', (batch_size, seq_len))] + init_states)
+def lstm_inference_symbol(prev_sym, num_lstm_layer, seq_len,
+                          num_hidden, num_embed, num_label, dropout=0.):
+
+    cls_weight = mx.sym.Variable("cls_weight")
+    cls_bias = mx.sym.Variable("cls_bias")
+    param_cells = []
+    last_states = []
+    for i in range(num_lstm_layer):
+        param_cells.append(LSTMParam(i2h_weight=mx.sym.Variable("l%d_i2h_weight" % i),
+                                     i2h_bias=mx.sym.Variable("l%d_i2h_bias" % i),
+                                     h2h_weight=mx.sym.Variable("l%d_h2h_weight" % i),
+                                     h2h_bias=mx.sym.Variable("l%d_h2h_bias" % i)))
+        state = LSTMState(c=mx.sym.Variable("l%d_init_c" % i),
+                          h=mx.sym.Variable("l%d_init_h" % i))
+        last_states.append(state)
+    assert(len(last_states) == num_lstm_layer)
+
+    # embeding layer
+    sliced = mx.sym.SliceChannel(data=prev_sym, num_outputs=seq_len, squeeze_axis=1, name='sliced%d' % i)
+
+    hidden_all = []
+    for seqidx in range(seq_len):
+        hidden = sliced[seqidx]
+
+        # stack LSTM
+        for i in range(num_lstm_layer):
+            if i == 0:
+                dp_ratio = 0.
+            else:
+                dp_ratio = dropout
+            next_state = lstm(num_hidden, indata=hidden,
+                              prev_state=last_states[i],
+                              param=param_cells[i],
+                              seqidx=seqidx, layeridx=i, dropout=dp_ratio)
+            hidden = next_state.h
+            last_states[i] = next_state
+        # decoder
+        if dropout > 0.:
+            hidden = mx.sym.Dropout(data=hidden, p=dropout)
+        hidden_all.append(hidden)
+
+    hidden_concat = mx.sym.Concat(*hidden_all, dim=0)
+    pred = mx.sym.FullyConnected(data=hidden_concat, num_hidden=num_label,
+                                 weight=cls_weight, bias=cls_bias, name='pred')
+
+    return pred
