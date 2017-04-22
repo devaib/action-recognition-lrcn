@@ -12,15 +12,15 @@ import time
 
 # hyperparameter
 img_size = 227
-batch_size = 4
-seq_len = 20
+batch_size = 1
+seq_len = 10
 buckets = [seq_len]
 num_lstm_layer = 1
 vocab_size = 128
 num_embed = 256
 num_hidden = 384
 num_label = 6
-ctx = mx.cpu()
+ctx = mx.gpu()
 
 # imdb
 imdb = KTH('../cache/trainval')
@@ -57,7 +57,7 @@ sym, arg_params, aux_params = mx.model.load_checkpoint('lrcn', 20)
 mod = mx.mod.Module(symbol=sym, context=ctx)
 
 prev_sym = get_cnn(seq_len)
-model = LSTMInferenceModel(prev_sym, num_lstm_layer, seq_len,
+model = LSTMInferenceModel(batch_size, prev_sym, num_lstm_layer, seq_len,
                            num_hidden=num_hidden, num_embed=num_embed,
                            num_label=num_label, arg_params=arg_params, ctx=ctx, dropout=0.2)
 
@@ -74,12 +74,14 @@ prob = model.forward(input_vec, False)
 print prob.shape
 print prob
 
+ind = 0
 for pr in prob:
     p = pr
     prob = np.squeeze(p)
 
     a = np.argsort(p)[::-1]
-    print a[0]
+    print '{}: {}'.format(ind, a[0])
+    ind += 1
 # for i in a[0]:
 #     print('probability=%f' %(prob[i]))
 

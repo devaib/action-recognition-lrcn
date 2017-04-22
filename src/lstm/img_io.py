@@ -106,7 +106,7 @@ class ImageIter(mx.io.DataIter):
         return self._cur_batch
 
     def _get_batch(self):
-        batch_inputvec = mx.nd.zeros((self.batch_size, 20, self._data_shape[0], self._data_shape[1]))
+        batch_inputvec = mx.nd.zeros((self.batch_size, self.seq_len, self._data_shape[0], self._data_shape[1]))
         batch_label = []
         for i in range(self.batch_size):
             if (self._current + i) >= self._size:

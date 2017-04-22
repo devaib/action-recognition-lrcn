@@ -7,7 +7,6 @@
 \textclass article
 \begin_preamble
 \usepackage[justification=centering]{caption}
-\usepackage{amsmath}
 \usepackage[T1]{fontenc}
 \usepackage[latin9]{inputenc}
 \setcounter{secnumdepth}{3}
@@ -96,10 +95,6 @@ Action Recognition with Multi-stream CNN & LSTM
 Binghao Wang, Qianyao Yang
 \end_layout
 
-\begin_layout Date
-2017-4-21
-\end_layout
-
 \begin_layout Abstract
 pass
 \end_layout
@@ -182,142 +177,6 @@ status collapsed
 
 \begin_layout Plain Layout
 Two-stream architecture for video classification
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The spatial stream is used to extract features from individual video frames.
- The architecture is nothing but a conventional CNN network taking still
- images as input.
- This stream is important as many actions are highly dependant on the still
- appearance of the frames.
- It's also shown in this paper that action classification from still frames
- is fairly competitive on its own.
-\end_layout
-
-\begin_layout Standard
-Likewise, the temporal stream shares exactly the same structure with the
- spatial one but takes stacks of optical flow as input.
- Temporal input can be treated similarly since its only difference with
- spatial input is the amount of input channels.
- To keep motion information, trajectory stacking, bi-directional optical
- flow, mean flow subtraction were also took into consideration.
- We will explain those in detail.
-\end_layout
-
-\begin_layout Subsubsection
-Optical flow stacking
-\end_layout
-
-\begin_layout Standard
-Breifly speaking, optical flow is the apparent motion(displacement 
-\begin_inset Formula $d_{t}$
-\end_inset
-
-) of objects or surfaces, as shown in Fig.
- 2.
- 
-\begin_inset Formula $d_{t}(u,v)$
-\end_inset
-
- denotes the displacement vector at location 
-\begin_inset Formula $(u,v)$
-\end_inset
-
- in frame 
-\begin_inset Formula $t$
-\end_inset
-
-.
- Naturally, we can easily get its horizontal and vertical components 
-\begin_inset Formula $d_{t}^{x}$
-\end_inset
-
- and 
-\begin_inset Formula $d_{t}^{y}$
-\end_inset
-
-, and treat them as image channels.
- To capture motion information from video, they stack the optical flows
- extracted from 
-\begin_inset Formula $L$
-\end_inset
-
- consecutive frames to form a 
-\begin_inset Formula $2L$
-\end_inset
-
- input channels.
- Formally speaking, if the video has 
-\begin_inset Formula $w$
-\end_inset
-
- and 
-\begin_inset Formula $h$
-\end_inset
-
- as its width and height, its input of temporal stream would be 
-\begin_inset Formula $I_{\tau}\in\mathbb{R}^{w\times h\times2L}$
-\end_inset
-
- for any frame 
-\begin_inset Formula $\tau$
-\end_inset
-
- is represented as:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{equation}
-\begin{gathered}I_{\tau}(u,v,2k-1)=d_{\tau+k-1}^{x}(u,v),\\
-I_{\tau}(u,v,2k)=d_{\tau+k-1}^{y}(u,v),\\
-u=[1;w],v=[w;h],k=[1;L]
-\end{gathered}
-\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename img/optical_flow.png
-	scale 50
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Sketch of multi-frame optical flow.
- Left: optical flow stacking.
- Right: trajectory stacking.
 \end_layout
 
 \end_inset

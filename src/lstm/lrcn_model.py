@@ -11,6 +11,7 @@ from lrcn import LSTMState, LSTMParam, lstm, lstm_inference_symbol
 
 class LSTMInferenceModel(object):
     def __init__(self,
+                 batch_size,
                  prev_sym,
                  num_lstm_layer,
                  seq_len,
@@ -28,7 +29,6 @@ class LSTMInferenceModel(object):
                                          num_label,
                                          dropout)
 
-        batch_size = 4
         init_c = [('l%d_init_c'%l, (batch_size, num_hidden)) for l in range(num_lstm_layer)]
         init_h = [('l%d_init_h'%l, (batch_size, num_hidden)) for l in range(num_lstm_layer)]
         data_shape = [("data", (batch_size, seq_len, 100, 100))]
