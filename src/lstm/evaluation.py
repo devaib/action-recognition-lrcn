@@ -35,11 +35,11 @@ init_states = init_c + init_h
 
 # load data
 Batch = namedtuple('Batch', ['data'])
-filepath = os.path.dirname(os.path.realpath(__file__))
-inputvec_path = os.path.join(filepath, '../cache_imagestack/test/inputvec')
-name = 'test_handwaving_person07_d1_1_1'
-input_vec0 = pickle.load(open(os.path.join(inputvec_path, name + '.p'), 'rb'))
-input_vec = input_vec0[0:1]
+# filepath = os.path.dirname(os.path.realpath(__file__))
+# inputvec_path = os.path.join(filepath, '../cache_imagestack/test/inputvec')
+# name = 'test_handclapping_person08_d1_1_1'
+# input_vec0 = pickle.load(open(os.path.join(inputvec_path, name + '.p'), 'rb'))
+# input_vec = input_vec0[0:1]
 
 imdb = KTH('../cache_imagestack/test')
 data_names = ['data']
@@ -73,6 +73,15 @@ model = LSTMInferenceModel(prev_sym, num_lstm_layer, seq_len,
 prob = model.forward(input_vec, False)
 print prob.shape
 print prob
+
+for pr in prob:
+    p = pr
+    prob = np.squeeze(p)
+
+    a = np.argsort(p)[::-1]
+    print a[0]
+# for i in a[0]:
+#     print('probability=%f' %(prob[i]))
 
 # # predict
 # count = 0
